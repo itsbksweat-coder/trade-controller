@@ -1,0 +1,173 @@
+-- Script Path: game:GetService("ReplicatedStorage").Controllers.CodesController
+-- Took 0.05s to decompile.
+-- Executor: Volt (1.3.6.3)
+
+local ReplicatedStorage_1 = game:GetService("ReplicatedStorage")
+local Players_1 = game:GetService("Players")
+local Controllers_1 = ReplicatedStorage_1:WaitForChild("Controllers")
+local InterfaceController_upv_1 = require(Controllers_1.InterfaceController)
+local NotificationController_upv_1 = require(Controllers_1.NotificationController)
+local Net_upv_1 = require(ReplicatedStorage_1:WaitForChild("Packages").Net)
+local AnimatedButton_upv_1 = require(ReplicatedStorage_1:WaitForChild("Classes").AnimatedButton)
+local CodesFlags_upv_1 = require(ReplicatedStorage_1.Shared.Flags.CodesFlags)
+local u1 = require(ReplicatedStorage_1.Datas.ServerData).IsTradePlaza()
+local PlayerGui_1 = Players_1.LocalPlayer.PlayerGui
+local Codes_upv_1 = PlayerGui_1:WaitForChild("Codes").Codes
+local Codes_upv_2 = PlayerGui_1:WaitForChild("LeftCenter").LeftCenter.Buttons:WaitForChild("Codes")
+local u2 = nil
+local tbl_1 = {}
+local function initTextbox(a1, a2)
+    --[[
+      name: initTextbox
+      line: 36
+      upvalues:
+        NotificationController_upv_1 (copy, index: 1)
+        Net_upv_1 (copy, index: 2)
+        AnimatedButton_upv_1 (copy, index: 3)
+    ]]
+    local u3 = false
+    local function submitCode_upv_1()
+        --[[
+          name: submitCode
+          line: 39
+          upvalues:
+            u3 (ref,  index: 1)
+            a1 (copy, index: 2)
+            NotificationController_upv_1 (copy, index: 3)
+            Net_upv_1 (copy, index: 4)
+        ]]
+        if (u3) then
+            return
+        end
+        if a1.Active then
+            local Text_upv_1 = a1.Text
+            if #Text_upv_1 >= 1 then
+                u3 = true
+                a1.Text = ""
+                a1.PlaceholderText = "Redeeming..."
+                a1.Selectable = false
+                a1.Active = false
+                a1:ReleaseFocus()
+                local success_1, v1, v2 = pcall(
+                    function()
+                        --[[
+                          line: 58
+                          upvalues:
+                            Net_upv_1 (copy, index: 1)
+                            Text_upv_1 (copy, index: 2)
+                        ]]
+                        return Net_upv_1:RemoteFunction("7d14a912-1040-4867-b005-98838eb9acc4"):InvokeServer(Text_upv_1)
+                    end
+                )
+                if success_1 then
+                    if v1 then
+                        if success_1 and v1 then
+                            local v3
+                            if typeof(v2) ~= "string" then
+                                v3 = "Code redeemed!"
+                            else
+                                v3 = v2
+                            end
+                            NotificationController_upv_1:Success(v3)
+                        end
+                    else
+                        local v3
+                        if typeof(v2) ~= "string" then
+                            v3 = "Request failed"
+                        else
+                            v3 = v2
+                        end
+                        NotificationController_upv_1:Error(v3)
+                    end
+                else
+                    NotificationController_upv_1:Error("Unexpected error")
+                    warn(v1)
+                end
+                a1.Text = ""
+                a1.PlaceholderText = "Code Here..."
+                task.wait(0.5)
+                a1.Selectable = true
+                a1.Active = true
+                u3 = false
+            else
+                NotificationController_upv_1:Error("Invalid code")
+            end
+        end
+    end
+    a1.FocusLost:Connect(
+        function(a3)
+            --[[
+              line: 80
+              upvalues:
+                submitCode_upv_1 (copy, index: 1)
+            ]]
+            if not a3 then
+                return
+            end
+            submitCode_upv_1()
+        end
+    )
+    if a2 then
+        local v4 = AnimatedButton_upv_1.new(a2)
+        v4:Animate()
+        v4.OnActivated:Connect(submitCode_upv_1)
+    end
+    a1:GetPropertyChangedSignal("Text"):Connect(
+        function()
+            --[[
+              line: 95
+              upvalues:
+                a1 (copy, index: 1)
+            ]]
+            local Text_2 = a1.Text
+            local v5 = string.sub(string.gsub(Text_2, "[^%w]", ""), 1, 50)
+            if v5 == Text_2 then
+                return
+            end
+            a1.Text = v5
+        end
+    )
+end
+function tbl_1.Start(a1)
+    --[[
+      name: Start
+      line: 109
+      upvalues:
+        u2 (ref,  index: 1)
+        InterfaceController_upv_1 (copy, index: 2)
+        Codes_upv_1 (copy, index: 3)
+        initTextbox (copy, index: 4)
+        CodesFlags_upv_1 (copy, index: 5)
+        u1 (copy, index: 6)
+        Codes_upv_2 (copy, index: 7)
+    ]]
+    u2 = InterfaceController_upv_1:Register("Codes", Codes_upv_1, "TopQuint")
+    u2:AttachCloseButton(Codes_upv_1.Header.Close)
+    u2:Close()
+    initTextbox(Codes_upv_1.CodeRedeem.TextBox, Codes_upv_1.Confirm)
+    local function updateEnabled()
+        --[[
+          name: updateEnabled
+          line: 117
+          upvalues:
+            CodesFlags_upv_1 (copy, index: 1)
+            u1 (copy, index: 2)
+            Codes_upv_2 (copy, index: 3)
+            u2 (ref,  index: 4)
+            InterfaceController_upv_1 (copy, index: 5)
+        ]]
+        local v6 = CodesFlags_upv_1.Enabled:Get() and (not u1)
+        Codes_upv_2.Visible = v6
+        if (v6) or not u2:IsOpened() then
+            return
+        end
+        InterfaceController_upv_1:Toggle("Codes", false)
+    end
+    local v7 = CodesFlags_upv_1.Enabled:Get() and (not u1)
+    Codes_upv_2.Visible = v7
+    if not (v7) and u2:IsOpened() then
+        InterfaceController_upv_1:Toggle("Codes", false)
+    end
+    CodesFlags_upv_1.Enabled.Changed:Connect(updateEnabled)
+end
+return tbl_1
